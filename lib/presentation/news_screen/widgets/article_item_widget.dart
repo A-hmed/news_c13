@@ -24,7 +24,6 @@ class ArticleItemWidget extends StatelessWidget {
           border: Border.all(color: ColorManger.black)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
         children: [
           ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -41,9 +40,8 @@ class ArticleItemWidget extends StatelessWidget {
           Text(title),
           Row(
             children: [
-              Text(author),
-              Spacer(),
-              Text(date),
+              Expanded(flex: 2, child: Text(author)),
+              Expanded(flex: 1, child: Text(date)),
             ],
           )
         ],

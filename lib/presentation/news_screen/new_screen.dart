@@ -1,88 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:news_app_c13/data/models/article_model.dart';
+import 'package:news_app_c13/data/api/api_managers.dart';
+import 'package:news_app_c13/data/models/source_dm.dart';
 import 'package:news_app_c13/presentation/common/widgets/custom_scaffold.dart';
-import 'package:news_app_c13/presentation/news_screen/widgets/article_item_widget.dart';
+import 'package:news_app_c13/presentation/news_screen/articles_list.dart';
 import 'package:news_app_c13/presentation/resourses/color_manger.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/theme_provider.dart';
 
-class NewsScreen extends StatelessWidget {
+class NewsScreen extends StatefulWidget {
   static const String routeName = '/newsScreen';
-  NewsScreen({super.key});
+  final String categoryId;
 
-  // ToDo  fake list from apis
-  final List<String> tabsList = [
-    'al ahly',
-    'on',
-    'nile',
-    'dmc',
-    'al ahly',
-    'on',
-    'nile',
-    'dmc' 'al ahly',
-    'on',
-    'nile',
-    'dmc',
-    'bein'
-  ];
+  NewsScreen({super.key, this.categoryId = ""});
+
+  @override
+  State<NewsScreen> createState() => _NewsScreenState();
+}
+
+class _NewsScreenState extends State<NewsScreen> {
+  late ThemeProvider themeProvider;
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider= Provider.of<ThemeProvider>(context);
-
+    themeProvider = Provider.of<ThemeProvider>(context);
     return CustomScaffold(
       title: 'Sport',
-      body: DefaultTabController(
-        length: tabsList.length,
+      body: FutureBuilder<List<SourceDM>>(
+          future: ApiManager.getSources(widget.categoryId),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return buildErrorWidget(snapshot.error.toString());
+            } else if (snapshot.hasData) {
+              return buildPageBody(snapshot.data ?? []);
+            } else {
+              return buildLoading();
+            }
+          }),
+    );
+  }
+
+  Widget buildPageBody(List<SourceDM> sources) => DefaultTabController(
+        length: sources.length,
         child: Column(
           children: [
             TabBar(
-              dividerColor: Colors.transparent,
-                indicatorColor:themeProvider.isDarkTheme ? ColorManger.white : ColorManger.black ,
+                dividerColor: Colors.transparent,
+                indicatorColor: themeProvider.isDarkTheme
+                    ? ColorManger.white
+                    : ColorManger.black,
                 isScrollable: true,
-
                 tabAlignment: TabAlignment.start,
-                tabs: tabsList
+                tabs: sources
                     .map(
-                      (tab) => Tab(
-                        text: tab,
+                      (source) => Tab(
+                        text: source.name ?? "",
                       ),
                     )
                     .toList()),
             Expanded(
               child: TabBarView(
-                  children: tabsList.map(
-                (tab) {
-                  final filterArticle = ArticleModel.articlesList
-                      .where(
-                        (article) => article.title!
-                            .toLowerCase()
-                            .contains(tab.toLowerCase()),
-                      )
-                      .toList();
-
-                  return ListView.separated(
-                      itemBuilder: (context, index) {
-                        final article = filterArticle[index];
-                        return ArticleItemWidget(
-                            image: article.image ?? '',
-                            title: article.title ?? '',
-                            author: article.author ?? '',
-                            date: DateFormat('h:mm a')
-                                .format(article.dateTime ?? DateTime.now()));
-                      },
-                      separatorBuilder: (context, index) => SizedBox(
-                            height: 10,
-                          ),
-                      itemCount: filterArticle.length);
+                  children: sources.map(
+                (source) {
+                  return ArticlesList(
+                    sourceId: source.id ?? "",
+                  );
                 },
               ).toList()),
             )
           ],
         ),
-      ),
-    );
-  }
+      );
+
+  Widget buildErrorWidget(String error) => Column(
+        children: [
+          Container(
+            child: Text(error),
+          ),
+          ElevatedButton(onPressed: () {}, child: Text("Retry"))
+        ],
+      );
+
+  Widget buildLoading() => Center(child: CircularProgressIndicator());
 }
