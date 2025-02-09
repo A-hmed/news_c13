@@ -5,7 +5,14 @@ import 'package:news_app_c13/presentation/providers/theme_provider.dart';
 import 'package:news_app_c13/presentation/resourses/theme_manger.dart';
 import 'package:provider/provider.dart';
 
+///Http requests: BaseUrl/EndPoint/PathVariables?QueryParameters(key=value)
+///1- Type (Get - post)
+///2- Args : Query parameter - path variable - body(post)->json
+///3- headers -> json
+///Response:
+/// body(html - xml- json) - status code - headers
 void main() {
+  //{"string": num - null - string - json list}
   runApp(ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
       child: const MyApp()));

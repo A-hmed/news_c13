@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:news_app_c13/data/models/article_model.dart';
+import 'package:news_app_c13/data/api/api_manager.dart';
+import 'package:news_app_c13/data/models/source_dm.dart';
 import 'package:news_app_c13/presentation/common/widgets/custom_scaffold.dart';
-import 'package:news_app_c13/presentation/news_screen/widgets/article_item_widget.dart';
+import 'package:news_app_c13/presentation/news_screen/articles_list.dart';
 import 'package:news_app_c13/presentation/resourses/color_manger.dart';
 import 'package:provider/provider.dart';
 
@@ -10,79 +10,68 @@ import '../providers/theme_provider.dart';
 
 class NewsScreen extends StatelessWidget {
   static const String routeName = '/newsScreen';
-  NewsScreen({super.key});
+  String categoryId = "";
 
-  // ToDo  fake list from apis
-  final List<String> tabsList = [
-    'al ahly',
-    'on',
-    'nile',
-    'dmc',
-    'al ahly',
-    'on',
-    'nile',
-    'dmc' 'al ahly',
-    'on',
-    'nile',
-    'dmc',
-    'bein'
-  ];
+  NewsScreen({super.key, this.categoryId = ""});
+
+  late ThemeProvider themeProvider;
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider= Provider.of<ThemeProvider>(context);
+    themeProvider = Provider.of<ThemeProvider>(context);
 
     return CustomScaffold(
-      title: 'Sport',
-      body: DefaultTabController(
-        length: tabsList.length,
+      title: categoryId.isEmpty ? "General" : categoryId,
+      body: FutureBuilder<List<SourceDM>>(
+          future: ApiManager.getSources(categoryId),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return buildError(snapshot.error.toString());
+            } else if (snapshot.hasData) {
+              return buildTabs(snapshot.data ?? []);
+            } else {
+              return buildLoading();
+            }
+          }),
+    );
+  }
+
+  Widget buildTabs(List<SourceDM> sources) => DefaultTabController(
+        length: sources.length,
         child: Column(
           children: [
             TabBar(
-              dividerColor: Colors.transparent,
-                indicatorColor:themeProvider.isDarkTheme ? ColorManger.white : ColorManger.black ,
+                dividerColor: Colors.transparent,
+                indicatorColor: themeProvider.isDarkTheme
+                    ? ColorManger.white
+                    : ColorManger.black,
                 isScrollable: true,
-
                 tabAlignment: TabAlignment.start,
-                tabs: tabsList
+                tabs: sources
                     .map(
-                      (tab) => Tab(
-                        text: tab,
+                      (source) => Tab(
+                        text: source.name,
                       ),
                     )
                     .toList()),
             Expanded(
               child: TabBarView(
-                  children: tabsList.map(
-                (tab) {
-                  final filterArticle = ArticleModel.articlesList
-                      .where(
-                        (article) => article.title!
-                            .toLowerCase()
-                            .contains(tab.toLowerCase()),
+                  children: sources
+                      .map(
+                        (source) => ArticlesList(sourceId: source.id!),
                       )
-                      .toList();
-
-                  return ListView.separated(
-                      itemBuilder: (context, index) {
-                        final article = filterArticle[index];
-                        return ArticleItemWidget(
-                            image: article.image ?? '',
-                            title: article.title ?? '',
-                            author: article.author ?? '',
-                            date: DateFormat('h:mm a')
-                                .format(article.dateTime ?? DateTime.now()));
-                      },
-                      separatorBuilder: (context, index) => SizedBox(
-                            height: 10,
-                          ),
-                      itemCount: filterArticle.length);
-                },
-              ).toList()),
+                      .toList()),
             )
           ],
         ),
-      ),
-    );
-  }
+      );
+
+  Widget buildError(String errorMessage) => Column(
+        children: [
+          Text(errorMessage),
+          ElevatedButton(onPressed: () {}, child: Text("Try again"))
+        ],
+      );
+
+  Widget buildLoading() => Center(child: CircularProgressIndicator());
 }

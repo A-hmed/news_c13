@@ -23,8 +23,6 @@ class ArticleItemWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: ColorManger.black)),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
         children: [
           ClipRRect(
               borderRadius: BorderRadius.circular(12),
