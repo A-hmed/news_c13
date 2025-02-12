@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:news_app_c13/data/repositories/news_repository/data_sources/local_data_source/news_local_data_source.dart';
 import 'package:news_app_c13/presentation/category_screen/category_screen.dart';
@@ -45,23 +44,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeManger.lightTheme,
       darkTheme: ThemeManger.darkTheme,
       themeMode: themeProvider.getCurrentTheme,
-
       initialRoute: CategoryScreen.routeName,
     );
   }
-}
-
-
-class Bloc {
-  void onEvent(Event event) {
-    if (event is CategoryClickEvent) {
-      onCategoryClick()
-    } else if (event TabClickedEvent) {
-      onTabClicked();
-    }
-  }
-
-  onCategoryClick
 }
 
 

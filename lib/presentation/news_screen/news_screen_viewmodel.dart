@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app_c13/core/api_state.dart';
 import 'package:news_app_c13/data/models/source_dm.dart';
 import 'package:news_app_c13/data/repositories/news_repository/news_repository.dart';
 
@@ -6,47 +7,41 @@ import 'package:news_app_c13/data/repositories/news_repository/news_repository.d
 /// Firebase firestore
 /// Sqlflite
 /// Hive
-class NewsScreenViewModel extends ChangeNotifier {
+class NewsScreenViewModel extends Cubit<NewsViewModelState> {
   NewsRepository newsRepository = NewsRepository();
-  ApiState sourceApi = LoadingState();
+
+  NewsScreenViewModel() : super(NewsViewModelState.initial());
 
   Future<void> getSources(categoryId) async {
     try {
-      sourceApi = LoadingState();
-      notifyListeners();
+      // sourceApi = LoadingState();
+      // notifyListeners();
+      emit(NewsViewModelState(LoadingState()));
       List<SourceDM> sources = await newsRepository.getSources(categoryId);
-      sourceApi = SuccessState(sources);
-      notifyListeners();
+      //   sourceApi = SuccessState(sources);
+      //   notifyListeners();
+      emit(NewsViewModelState(SuccessState(sources)));
     } catch (e) {
-      sourceApi = ErrorState(e.toString());
-      notifyListeners();
+      // sourceApi = ErrorState(e.toString());
+      //notifyListeners();
+      emit(NewsViewModelState(ErrorState(e.toString())));
     }
   }
 }
 
-class ApiState {
-  bool get hasError => this is ErrorState;
+class NewsViewModelState {
+  late ApiState sourceApi = LoadingState();
 
-  bool get hasData => this is SuccessState;
+  ///Rest of cubit state
 
-  String get error => (this as ErrorState).errorMessage;
+  NewsViewModelState(this.sourceApi);
 
-  T getData<T>() => (this as SuccessState<T>).data;
+  NewsViewModelState.initial() {
+    sourceApi = LoadingState();
+  }
 }
 
-class SuccessState<T> extends ApiState {
-  T data;
 
-  SuccessState(this.data);
-}
-
-class ErrorState extends ApiState {
-  String errorMessage;
-
-  ErrorState(this.errorMessage);
-}
-
-class LoadingState extends ApiState {}
 
 // Providers -> InheritedWidgets
 // Bloc-Cubit -> Streams of states
