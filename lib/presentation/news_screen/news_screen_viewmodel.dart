@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:news_app_c13/data/api/api_manager.dart';
+import 'package:news_app_c13/data/models/source_dm.dart';
+import 'package:news_app_c13/data/repositories/news_repository/news_repository.dart';
 
+/// Shared pref
+/// Firebase firestore
+/// Sqlflite
+/// Hive
 class NewsScreenViewModel extends ChangeNotifier {
-  // List<SourceDM> sources = [];
-  // bool isLoading = false;
-  // String errorMessage = "";
+  NewsRepository newsRepository = NewsRepository();
   ApiState sourceApi = LoadingState();
 
   Future<void> getSources(categoryId) async {
     try {
       sourceApi = LoadingState();
       notifyListeners();
-      ;
-      sourceApi = SuccessState(await ApiManager.getSources(categoryId));
+      List<SourceDM> sources = await newsRepository.getSources(categoryId);
+      sourceApi = SuccessState(sources);
       notifyListeners();
     } catch (e) {
       sourceApi = ErrorState(e.toString());
@@ -44,3 +47,6 @@ class ErrorState extends ApiState {
 }
 
 class LoadingState extends ApiState {}
+
+// Providers -> InheritedWidgets
+// Bloc-Cubit -> Streams of states

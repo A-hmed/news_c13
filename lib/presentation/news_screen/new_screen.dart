@@ -32,7 +32,6 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   Widget build(BuildContext context) {
     themeProvider = Provider.of<ThemeProvider>(context, listen: true);
-
     return ChangeNotifierProvider(
       create: (_) => viewModel,
       child: CustomScaffold(
@@ -84,7 +83,11 @@ class _NewsScreenState extends State<NewsScreen> {
   Widget buildError(String errorMessage) => Column(
         children: [
           Text(errorMessage),
-          ElevatedButton(onPressed: () {}, child: Text("Try again"))
+          ElevatedButton(
+              onPressed: () {
+                viewModel.getSources(widget.categoryId);
+              },
+              child: Text("Try again"))
         ],
       );
 
