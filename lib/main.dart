@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:news_app_c13/data/hive/sources_adapter.dart';
 import 'package:news_app_c13/presentation/category_screen/category_screen.dart';
 import 'package:news_app_c13/presentation/news_screen/new_screen.dart';
 import 'package:news_app_c13/presentation/providers/theme_provider.dart';
@@ -15,6 +17,8 @@ import 'package:provider/provider.dart';
 ///
 void main() {
   //{"string": num - null - string - json list}
+  Hive.initFlutter();
+  Hive.registerAdapter(SourceDMAdapter());
   runApp(ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
       child: const MyApp()));

@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:news_app_c13/data/api/api_manager.dart';
+import 'package:news_app_c13/data/news_repository/news_repository.dart';
+
+import '../../data/models/source_dm.dart';
 
 class NewsScreenViewModel extends ChangeNotifier {
   // List<SourceDM> sources = [];
   // bool isLoading = false;
   // String errorMessage = "";
   ApiState sourceApi = LoadingState();
+  NewsRepository newsRepository = NewsRepository();
 
   Future<void> getSources(categoryId) async {
     try {
       sourceApi = LoadingState();
       notifyListeners();
-      ;
-      sourceApi = SuccessState(await ApiManager.getSources(categoryId));
+      List<SourceDM> sources = await newsRepository.getSources(categoryId);
+      sourceApi = SuccessState(sources);
       notifyListeners();
     } catch (e) {
       sourceApi = ErrorState(e.toString());
