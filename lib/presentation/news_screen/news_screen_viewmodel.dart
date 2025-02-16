@@ -1,49 +1,42 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app_c13/core/api_state/api_state.dart';
 import 'package:news_app_c13/data/news_repository/news_repository.dart';
 
 import '../../data/models/source_dm.dart';
 
-class NewsScreenViewModel extends ChangeNotifier {
-  // List<SourceDM> sources = [];
-  // bool isLoading = false;
-  // String errorMessage = "";
-  ApiState sourceApi = LoadingState();
+// InherItedWidget -> Provider
+// Stream -> Bloc
+class NewsScreenViewModel extends Cubit<NewsViewModelState> {
   NewsRepository newsRepository = NewsRepository();
 
+  NewsScreenViewModel() : super(NewsViewModelState.initial());
   Future<void> getSources(categoryId) async {
     try {
-      sourceApi = LoadingState();
-      notifyListeners();
+      // sourceApi = LoadingState();
+      // notifyListeners();
+      // xController.add(event)
+      emit(NewsViewModelState(LoadingState()));
+
       List<SourceDM> sources = await newsRepository.getSources(categoryId);
-      sourceApi = SuccessState(sources);
-      notifyListeners();
+      // sourceApi = SuccessState(sources);
+      // notifyListeners();
+      emit(NewsViewModelState(SuccessState(sources)));
     } catch (e) {
-      sourceApi = ErrorState(e.toString());
-      notifyListeners();
+      // sourceApi = ;
+      // notifyListeners();
+      emit(NewsViewModelState(ErrorState(e.toString())));
     }
   }
 }
 
-class ApiState {
-  bool get hasError => this is ErrorState;
+class NewsViewModelState {
+  late ApiState sourceApi = LoadingState();
 
-  bool get hasData => this is SuccessState;
+  NewsViewModelState(this.sourceApi);
 
-  String get error => (this as ErrorState).errorMessage;
-
-  T getData<T>() => (this as SuccessState<T>).data;
+  NewsViewModelState.initial() {
+    sourceApi = LoadingState();
+  }
 }
-
-class SuccessState<T> extends ApiState {
-  T data;
-
-  SuccessState(this.data);
-}
-
-class ErrorState extends ApiState {
-  String errorMessage;
-
-  ErrorState(this.errorMessage);
-}
-
-class LoadingState extends ApiState {}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app_c13/data/models/source_dm.dart';
 import 'package:news_app_c13/presentation/common/widgets/custom_scaffold.dart';
 import 'package:news_app_c13/presentation/news_screen/articles_list.dart';
@@ -18,6 +19,7 @@ class NewsScreen extends StatefulWidget {
   State<NewsScreen> createState() => _NewsScreenState();
 }
 
+///BlocBuilder - Bloc listener - BlocConsumer
 class _NewsScreenState extends State<NewsScreen> {
   late ThemeProvider themeProvider;
 
@@ -32,22 +34,34 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   Widget build(BuildContext context) {
     themeProvider = Provider.of<ThemeProvider>(context, listen: true);
-
-    return ChangeNotifierProvider(
+    return BlocProvider(
       create: (_) => viewModel,
       child: CustomScaffold(
-          title: widget.categoryId.isEmpty ? "General" : widget.categoryId,
-          body: Consumer<NewsScreenViewModel>(
-            builder: (context, viewModel, _) {
-              if (viewModel.sourceApi.hasError) {
-                return buildError(viewModel.sourceApi.error);
-              } else if (viewModel.sourceApi.hasData) {
-                return buildTabs(viewModel.sourceApi.getData<List<SourceDM>>());
+        title: widget.categoryId.isEmpty ? "General" : widget.categoryId,
+        body: BlocConsumer<NewsScreenViewModel, NewsViewModelState>(
+            builder: (context, state) {
+              var sourceApi = state.sourceApi;
+              if (sourceApi.hasError) {
+                return buildError(sourceApi.error);
+              } else if (sourceApi.hasData) {
+                return buildTabs(sourceApi.getData<List<SourceDM>>());
               } else {
                 return buildLoading();
               }
             },
-          )),
+            listener: (context, state) {}),
+        // body: Consumer<NewsScreenViewModel>(
+        //   builder: (context, viewModel, _) {
+        //     if (viewModel.sourceApi.hasError) {
+        //       return buildError(viewModel.sourceApi.error);
+        //     } else if (viewModel.sourceApi.hasData) {
+        //       return buildTabs(viewModel.sourceApi.getData<List<SourceDM>>());
+        //     } else {
+        //       return buildLoading();
+        //     }
+        //   },
+        // )
+      ),
     );
   }
 
@@ -89,8 +103,6 @@ class _NewsScreenState extends State<NewsScreen> {
       );
 
   Widget buildLoading() => Center(child: CircularProgressIndicator());
-
-  showLoading() {}
 }
 
 ///S
